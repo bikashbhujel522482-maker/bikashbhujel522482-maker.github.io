@@ -1,90 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M8PR1T8CDW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M8PR1T8CDW');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Arduino LED Calculator | Resistor Guide</title>
+    <title>Arduino LED Resistor Calculator & Color Codes</title>
+    <meta name="description" content="Calculate the required resistor for your Arduino LED projects and view resistor color charts.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        input:focus { outline: 2px solid #3b82f6; }
-    </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-6">
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:p-8 font-sans">
 
-    <div class="max-w-md w-full bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
-        <h1 class="text-2xl font-bold text-center mb-6 text-blue-400">Arduino LED Resistor Tool</h1>
-        
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium mb-1">Supply Voltage ($V_s$)</label>
-                <input type="number" id="vs" value="5" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white">
-                <p class="text-xs text-gray-400 mt-1">Common: 5V (Arduino) or 3.3V (ESP32)</p>
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-400 mb-2">Arduino LED Helper</h1>
+            <p class="text-gray-400">Calculate resistance and identify color codes in one place.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-6 flex items-center">
+                    <span class="bg-blue-600 w-2 h-6 rounded mr-2"></span> Calculator
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-300">Supply Voltage ($V_s$)</label>
+                        <input type="number" id="vs" value="5" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-300">LED Color Preset</label>
+                        <select id="preset" onchange="applyPreset()" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white outline-none">
+                            <option value="custom">Custom</option>
+                            <option value="2.0">Red / Yellow (~2.0V)</option>
+                            <option value="3.2">Blue / White / Green (~3.2V)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-gray-300">Forward $V_f$</label>
+                            <input type="number" id="vf" value="2.0" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-gray-300">Current (mA)</label>
+                            <input type="number" id="current" value="20" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white outline-none">
+                        </div>
+                    </div>
+
+                    <button onclick="calculate()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-lg transition-all transform active:scale-95 shadow-lg">
+                        Calculate Result
+                    </button>
+                </div>
+
+                <div id="resultBox" class="hidden mt-8 p-5 bg-gray-900 rounded-xl border-l-4 border-blue-500 animate-pulse-once">
+                    <p class="text-xs uppercase tracking-wider text-gray-500 font-bold">Required Resistance</p>
+                    <h2 id="resistorVal" class="text-4xl font-black text-white my-1">-- Ω</h2>
+                    <p id="wattageWarning" class="text-sm mt-2 text-gray-400 font-medium"></p>
+                </div>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium mb-1">LED Color (Presets)</label>
-                <select id="preset" onchange="applyPreset()" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white">
-                    <option value="custom">Custom</option>
-                    <option value="2.0">Red / Yellow (approx 2.0V)</option>
-                    <option value="3.2">Blue / White / Green (approx 3.2V)</option>
-                </select>
+            <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-6 flex items-center">
+                    <span class="bg-green-500 w-2 h-6 rounded mr-2"></span> Resistor Color Chart
+                </h2>
+                <div class="overflow-hidden rounded-xl border border-gray-700">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-900 text-gray-400">
+                            <tr>
+                                <th class="p-3">Color</th>
+                                <th class="p-3 text-center">Digit</th>
+                                <th class="p-3 text-right">Multiplier</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700">
+                            <tr><td class="p-3"><span class="inline-block w-4 h-4 bg-black border border-gray-600 rounded-full mr-2 align-middle"></span>Black</td><td class="text-center">0</td><td class="text-right">x1</td></tr>
+                            <tr><td class="p-3"><span class="inline-block w-4 h-4 bg-orange-900 rounded-full mr-2 align-middle"></span>Brown</td><td class="text-center">1</td><td class="text-right">x10</td></tr>
+                            <tr><td class="p-3"><span class="inline-block w-4 h-4 bg-red-600 rounded-full mr-2 align-middle"></span>Red</td><td class="text-center">2</td><td class="text-right">x100</td></tr>
+                            <tr><td class="p-3"><span class="inline-block w-4 h-4 bg-orange-500 rounded-full mr-2 align-middle"></span>Orange</td><td class="text-center">3</td><td class="text-right">x1k</td></tr>
+                            <tr><td class="p-3"><span class="inline-block w-4 h-4 bg-yellow-400 rounded-full mr-2 align-middle"></span>Yellow</td><td class="text-center">4</td><td class="text-right">x10k</td></tr>
+                            <tr><td class="p-3"><span class="inline-block w-4 h-4 bg-green-600 rounded-full mr-2 align-middle"></span>Green</td><td class="text-center">5</td><td class="text-right">x100k</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-dashed border-gray-600">
+                    <p class="text-xs text-gray-400 leading-relaxed italic">
+                        "Bad Beer Rots Our Young Guts But Vodka Goes Well" — A classic mnemonic to remember: Black, Brown, Red, Orange, Yellow, Green, Blue, Violet, Grey, White.
+                    </p>
+                </div>
             </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-1">Forward Voltage ($V_f$)</label>
-                <input type="number" id="vf" value="2.0" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium mb-1">Target Current (mA)</label>
-                <input type="number" id="current" value="20" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white">
-            </div>
-
-            <button onclick="calculate()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition duration-200 mt-4 shadow-lg">
-                Calculate Resistance
-            </button>
-        </div>
-
-        <div id="resultBox" class="hidden mt-8 p-4 bg-gray-900 rounded-xl border-l-4 border-blue-500">
-            <p class="text-sm text-gray-400">Required Resistor:</p>
-            <h2 id="resistorVal" class="text-3xl font-bold text-white">-- ohms</h2>
-            <p id="wattageWarning" class="text-xs mt-2 text-gray-400"></p>
         </div>
     </div>
 
     <script>
         function applyPreset() {
             const preset = document.getElementById('preset').value;
-            if (preset !== 'custom') {
-                document.getElementById('vf').value = preset;
-            }
+            if (preset !== 'custom') document.getElementById('vf').value = preset;
         }
 
         function calculate() {
             const vs = parseFloat(document.getElementById("vs").value);
             const vf = parseFloat(document.getElementById("vf").value);
-            const ma = parseFloat(document.getElementById("current").value);
-            const current = ma / 1000;
+            const current = parseFloat(document.getElementById("current").value) / 1000;
 
-            if (vs <= vf) {
-                alert("Supply voltage must be higher than LED Forward voltage!");
-                return;
+            if (vs <= vf) { 
+                alert("Error: Supply voltage must be greater than LED voltage."); 
+                return; 
             }
 
             const r = (vs - vf) / current;
             const power = (vs - vf) * current;
 
-            // Update UI
-            document.getElementById("resultBox").classList.remove('hidden');
+            const resBox = document.getElementById("resultBox");
+            resBox.classList.remove('hidden');
             document.getElementById("resistorVal").innerHTML = Math.round(r) + " Ω";
             
-            let pText = `Power Dissipation: ${power.toFixed(3)}W. `;
+            let pText = `Dissipation: ${power.toFixed(3)}W. `;
             if (power > 0.25) {
-                pText += "⚠️ Warning: Use a high-wattage resistor!";
-                document.getElementById("resultBox").classList.replace('border-blue-500', 'border-red-500');
+                pText += "⚠️ Use a 1/2W or 1W resistor!";
+                resBox.classList.replace('border-blue-500', 'border-red-500');
             } else {
-                pText += "✅ Standard 1/4W resistor is safe.";
-                document.getElementById("resultBox").classList.replace('border-red-500', 'border-blue-500');
+                pText += "✅ Standard 1/4W resistor is fine.";
+                resBox.classList.replace('border-red-500', 'border-blue-500');
             }
             document.getElementById("wattageWarning").innerText = pText;
         }
