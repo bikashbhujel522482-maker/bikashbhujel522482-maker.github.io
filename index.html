@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Arduino LED Resistor Calculator</title>
+</head>
+
+<body>
+
+<h2>Arduino LED Resistor Calculator</h2>
+
+<label>Supply Voltage (V):</label>
+<input type="number" id="vs"><br><br>
+
+<label>LED Forward Voltage (V):</label>
+<input type="number" id="vf"><br><br>
+
+<label>LED Current (mA):</label>
+<input type="number" id="current"><br><br>
+
+<button onclick="calculate()">Calculate</button>
+
+<h3 id="result"></h3>
+
+<script>
+function calculate() {
+
+let vs = document.getElementById("vs").value;
+let vf = document.getElementById("vf").value;
+let current = document.getElementById("current").value / 1000;
+
+let r = (vs - vf) / current;
+
+document.getElementById("result").innerHTML =
+"Required resistor: " + Math.round(r) + " ohms";
+
+}
+</script>
+
+</body>
+</html>
